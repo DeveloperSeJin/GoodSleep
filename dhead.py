@@ -30,7 +30,7 @@ def tal(tal_str):
     '(?:\x14\x00)'
 
   def annotation_to_list(annotation):
-    return str(annotation, 'utf-8').split('\x14') if annotation else []
+    return annotation.split('\x14') if annotation else []
 
   def parse(dic):
     return (

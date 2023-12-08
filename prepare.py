@@ -67,8 +67,8 @@ def main():
                         help="File path to the CSV or NPY file that contains walking data.")
     parser.add_argument("--output_dir", type=str, default="data_2013/eeg_fpz_cz",
                         help="Directory where to save outputs.")
-    parser.add_argument("--select_ch", type=str, default="EEG Fpz-Cz",
-                        help="File path to the trained model used to estimate walking speeds.")
+    # parser.add_argument("--select_ch", type=str, default="EEG Fpz-Cz",
+    #                     help="File path to the trained model used to estimate walking speeds.")
     args = parser.parse_args()
 
     # Output dir
@@ -79,7 +79,8 @@ def main():
         os.makedirs(args.output_dir)
 
     # Select channel
-    select_ch = args.select_ch
+    # select_ch = args.select_ch
+    select_ch = 'EEG Fpz-Cz'
 
     # Read raw and annotation EDF files
     psg_fnames = glob.glob(os.path.join(args.data_dir, "*PSG.edf"))
@@ -98,13 +99,12 @@ def main():
 
         raw = read_raw_edf(psg_fnames[i], preload=True, stim_channel=None)
         sampling_rate = raw.info['sfreq']
-        # raw_ch_df = raw.to_data_frame(scaling_time=100.0)[select_ch]
         raw_ch_df = raw.to_data_frame(scalings=100.0)[select_ch]
         raw_ch_df = raw_ch_df.to_frame()
         raw_ch_df.set_index(np.arange(len(raw_ch_df)))
 
         # Get raw header
-        f = open(psg_fnames[i], 'r', encoding='iso-8859-1')
+        f = open(psg_fnames[i], 'r', encoding='ISO-8859-1')
 
         reader_raw = dhead.BaseEDFReader(f)
         reader_raw.read_header()
@@ -113,7 +113,7 @@ def main():
         raw_start_dt = datetime.strptime(h_raw['date_time'], "%Y-%m-%d %H:%M:%S")
 
         # Read annotation and its header
-        f = open(ann_fnames[i], 'r')
+        f = open(ann_fnames[i], 'r', encoding='ISO-8859-1')
         reader_ann = dhead.BaseEDFReader(f)
         reader_ann.read_header()
         h_ann = reader_ann.header
@@ -136,16 +136,16 @@ def main():
                 if duration_sec % EPOCH_SEC_SIZE != 0:
                     raise Exception("Something wrong")
                 duration_epoch = int(duration_sec / EPOCH_SEC_SIZE)
-                label_epoch = np.ones(duration_epoch, dtype=np.int) * label
+                label_epoch = np.ones(duration_epoch, dtype=int) * label
                 labels.append(label_epoch)
-                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=np.int)
+                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=int)
                 label_idx.append(idx)
 
                 print(("Include onset:{}, duration:{}, label:{} ({})".format(
                     onset_sec, duration_sec, label, ann_str
                 )))
             else:
-                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=np.int)
+                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=int)
                 remove_idx.append(idx)
 
                 print(("Remove onset:{}, duration:{}, label:{} ({})".format(
